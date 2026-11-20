@@ -1,0 +1,41 @@
+{
+  "raw_dataset_path": "Teenager_GoodReads_Emotion.csv",
+  "output_clean_path": "books_clean.csv",
+  "initial_total_rows": 19804,
+  "clean_total_rows": 19784,
+  "dropped_duplicate_rows": 20,
+  "unique_authors_count": 9832,
+  "unique_titles_count": 17074,
+  "blank_values_raw": {
+    "ISBN": 0,
+    "ID": 0,
+    "Title": 38,
+    "Author": 5,
+    "Description": 8,
+    "Average_Rating": 0,
+    "Age": 0,
+    "EmotionVector": 0
+  },
+  "blank_values_clean": {
+    "ISBN": 0,
+    "ID": 0,
+    "Title": 38,
+    "Author": 5,
+    "Description": 8,
+    "Average_Rating": 0,
+    "Age": 0,
+    "EmotionVector": 0
+  },
+  "invalid_emotion_vectors": 0,
+  "age_distribution": {
+    "min": 12.0,
+    "max": 19.0,
+    "mean": 16.68,
+    "median": 17.0
+  },
+  "rating_distribution": {
+    "min": 0.0,
+    "max": 5.0,
+    "mean": 3.8
+  }
+}

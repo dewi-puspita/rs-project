@@ -1,0 +1,13 @@
+{
+  "dataset_clean": "Cleaned_Teenage_GoodReads_Emotion.csv",
+  "dataset_kaggle": "GoodReads_100k_books.csv",
+  "output_enriched": "books_enriched.csv",
+  "total_books": 19784,
+  "matched_by_id": 932,
+  "matched_by_isbn13": 0,
+  "matched_by_isbn": 0,
+  "matched_by_title_author": 434,
+  "total_matched": 1366,
+  "unmatched": 18418,
+  "match_rate_percentage": 6.9
+}
