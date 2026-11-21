@@ -1,78 +1,76 @@
 """
-Modul penyusun teks dokumen buku (Document Text Builder) untuk keperluan
-embedding (Dense Retrieval) dan BM25 (Sparse Retrieval).
+Modul Document Builder Baseline.
+Sesuai Spesifikasi Rantug v2 (Bab 3.4 & Bab 5).
 
-Sesuai Spesifikasi Rancangan Tugas (Bab 5.2):
-Format:
-Title: {title}
-Author: {author}
-Description: {description}
-Genre: {genre_if_available}
-Themes: {themes_if_available}
-
-Aturan:
-- Description menjadi sumber teks utama.
-- Genre dan Themes hanya ditambahkan jika datanya tersedia dan bukan string kosong / NaN.
-- Nilai kosong TIDAK menampilkan 'None' atau 'NaN'.
-- Metadata teknis (ISBN, ID, EmotionVector, genre_source, themes_source) TIDAK dimasukkan
-  ke dalam teks representasi agar tidak mengotori makna semantik embedding.
+Tugas:
+1. Menyusun teks dasar representasi buku: Title + Author + Description.
+2. Tidak menambahkan placeholder buatan ([untitled], ID, dll) dalam teks representasi.
+3. Menghasilkan 3 variasi teks logis:
+   - 'document_text'     : Teks dasar untuk BM25
+   - 'e5_passage_text'   : Teks berawalan 'passage: ' untuk Multilingual E5
+   - 'bge_passage_text'  : Teks murni (tanpa prefix) untuk BGE English
+4. Genre dan Themes tidak dicampur ke teks representasi baseline, melainkan
+   disediakan sebagai payload dictionary metadata terpisah.
 """
 
-from typing import Dict, Any
+from typing import Dict, Any, Tuple, Optional
 import pandas as pd
 
 
-def build_document_text(row: Dict[str, Any], lowercase: bool = True) -> str:
+def clean_text_field(val: Any) -> str:
+    """Membersihkan whitespace dan mengabaikan nilai NaN / string kosong."""
+    if val is None or pd.isna(val):
+        return ""
+    s = str(val).strip()
+    if s.lower() == "nan":
+        return ""
+    return s
+
+
+def build_baseline_document(row: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], Optional[str], Dict[str, Any]]:
     """
-    Menyusun teks dokumen tunggal dari baris data buku.
-    Input bisa berupa dictionary atau pandas Series.
-    
-    Argumen:
-    - lowercase: Jika True, memastikan seluruh teks (Title, Author, Desc, Genre, Themes)
-      berada dalam huruf kecil (case-folded) agar konsisten untuk Dense Embedding & BM25.
+    Menyusun teks dokumen baseline dari baris data buku.
+
+    Returns:
+        (document_text, e5_passage_text, bge_passage_text, metadata_dict)
+        Jika buku tidak memiliki Title dan Description, mengembalikan (None, None, None, metadata_dict)
     """
+    book_id = str(row.get("ID", "")).strip()
+    title = clean_text_field(row.get("Title", ""))
+    author = clean_text_field(row.get("Author", ""))
+    description = clean_text_field(row.get("Description", ""))
+
+    # Kriteria kelayakan: Wajib memiliki Title ATAU Description
+    if not title and not description:
+        return None, None, None, {}
+
     parts = []
-
-    def clean_val(val: Any) -> str:
-        if val is None or pd.isna(val):
-            return ""
-        s = str(val).strip()
-        if s.lower() == "nan":
-            return ""
-        return s.lower() if lowercase else s
-
-    # 1. Title
-    title = clean_val(row.get("Title", ""))
     if title:
         parts.append(f"Title: {title}")
-
-    # 2. Author
-    author = clean_val(row.get("Author", ""))
     if author:
         parts.append(f"Author: {author}")
-
-    # 3. Description (Komponen Utama)
-    description = clean_val(row.get("Description", ""))
     if description:
         parts.append(f"Description: {description}")
 
-    # 4. Genre (Hanya jika tersedia)
-    genre = clean_val(row.get("Genre", ""))
-    if genre:
-        parts.append(f"Genre: {genre}")
+    doc_text = "\n".join(parts)
 
-    # 5. Themes (Hanya jika tersedia)
-    themes = clean_val(row.get("Themes", ""))
-    if themes:
-        parts.append(f"Themes: {themes}")
+    # 1. Dokumen untuk BM25 & BGE: Teks dasar
+    bge_passage = doc_text
+    # 2. Dokumen untuk Multilingual E5: Prefix 'passage: '
+    e5_passage = f"passage: {doc_text}"
 
-    return "\n".join(parts)
+    # Metadata terpisah untuk ChromaDB
+    metadata = {
+        "book_id": book_id,
+        "isbn": clean_text_field(row.get("ISBN", "")),
+        "title": title or "Judul tidak tersedia",
+        "author": author or "Penulis tidak tersedia",
+        "average_rating": float(row.get("Average_Rating", 0.0)) if clean_text_field(row.get("Average_Rating", "")) else 0.0,
+        "age": float(row.get("Age", 0.0)) if clean_text_field(row.get("Age", "")) else 0.0,
+        "genre": clean_text_field(row.get("Genre", "")),
+        "genre_source": clean_text_field(row.get("genre_source", "")),
+        "themes": clean_text_field(row.get("Themes", "")),
+        "themes_source": clean_text_field(row.get("themes_source", ""))
+    }
 
-
-def prepare_documents_dataframe(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Menambahkan kolom 'document_text' ke DataFrame buku.
-    """
-    df = df.copy()
-    df["document_text"] = df.apply(lambda r: build_document_text(r.to_dict()), axis=1)
-    return df
+    return doc_text, e5_passage, bge_passage, metadata

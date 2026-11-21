@@ -1,0 +1,90 @@
+{
+  "dataset_file": "Fixed_Genre_Themes_GoodReads_Emotion.csv",
+  "total_rows": 19784,
+  "total_columns": 12,
+  "columns_list": [
+    "ISBN",
+    "ID",
+    "Title",
+    "Author",
+    "Description",
+    "Average_Rating",
+    "Age",
+    "EmotionVector",
+    "Genre",
+    "genre_source",
+    "Themes",
+    "themes_source"
+  ],
+  "id_validation": {
+    "unique_ids": 19784,
+    "duplicate_ids": 0,
+    "empty_ids": 0
+  },
+  "text_statistics": {
+    "title_empty": 38,
+    "author_empty": 5,
+    "description_empty": 8
+  },
+  "indexing_eligibility": {
+    "eligible_for_retrieval": 19778,
+    "excluded_from_retrieval": 6,
+    "excluded_books": [
+      {
+        "ID": "35600350",
+        "ISBN": "35600350",
+        "Author": "ivan alekseyevich bunin",
+        "Reason": "Title dan Description sama-sama kosong"
+      },
+      {
+        "ID": "13543545",
+        "ISBN": "9789600509885",
+        "Author": "milan kundera yannis haris",
+        "Reason": "Title dan Description sama-sama kosong"
+      },
+      {
+        "ID": "10292017",
+        "ISBN": "9789602936900",
+        "Author": "voula mastori",
+        "Reason": "Title dan Description sama-sama kosong"
+      },
+      {
+        "ID": "20438752",
+        "ISBN": "9789602740507",
+        "Author": "robert arthur",
+        "Reason": "Title dan Description sama-sama kosong"
+      },
+      {
+        "ID": "43904399",
+        "ISBN": "043904399",
+        "Author": "",
+        "Reason": "Title dan Description sama-sama kosong"
+      },
+      {
+        "ID": "44022840",
+        "ISBN": "044022840",
+        "Author": "leo tolstoy",
+        "Reason": "Title dan Description sama-sama kosong"
+      }
+    ]
+  },
+  "emotion_vector_validation": {
+    "valid_count": 19784,
+    "invalid_count": 0,
+    "dimensions": [
+      "Anger",
+      "Anticipation",
+      "Disgust",
+      "Fear",
+      "Joy",
+      "Sadness",
+      "Surprise",
+      "Trust",
+      "Objective"
+    ]
+  },
+  "enrichment_metadata": {
+    "genre_available": 18120,
+    "themes_available": 4564
+  }
+}
