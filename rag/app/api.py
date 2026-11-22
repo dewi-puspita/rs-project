@@ -262,9 +262,14 @@ def recommend_books(req: RecommendationRequest):
         top_n=req.top_n
     )
 
-    # 5. Narasi LLM panjang dilewati demi respons instan (~1 detik)
-    # Catatan: Fungsi llm_engine.generate_recommendation tetap tersedia di llm_engine.py
-    explanation_text = ""
+    # 5. Hasilkan alasan rekomendasi secara riil menggunakan LLM yang dipilih pengguna (Llama / Qwen)
+    print(f"[API Server] Menjalankan model '{req.model_name}' via Ollama untuk merumuskan alasan rekomendasi...")
+    llm_reasons = llm_engine.generate_reasons_for_books(
+        user_query=req.query,
+        candidates=ranked_candidates,
+        age_cohort=effective_age,
+        active_emotions=active_emotions
+    )
 
     # 6. Format Respons terstruktur sesuai permintaan spesifik:
     # (Judul, Penulis, Rating, Sinopsis Singkat, Alasan)
@@ -278,9 +283,9 @@ def recommend_books(req: RecommendationRequest):
         themes_raw = b.get("themes", "")
         cleaned_genre = extract_real_genres(genre_raw, themes_raw, desc, b.get("title", ""))
         
-        # Susun alasan rekomendasi yang natural, kontekstual, dan ramah
+        # Alasan riil dari LLM terpilih (fallback jika Ollama offline)
         rank = b.get("final_rank", 1)
-        alasan = build_natural_reason(b, req.query, effective_age, active_emotions)
+        alasan = llm_reasons.get(rank) or build_natural_reason(b, req.query, effective_age, active_emotions)
 
         formatted_books.append({
             "rank": rank,
@@ -308,8 +313,7 @@ def recommend_books(req: RecommendationRequest):
         "age_range": effective_age,
         "detected_age": parsed.get("detected_age"),
         "total_books": len(formatted_books),
-        "books": formatted_books,
-        "explanation": explanation_text
+        "books": formatted_books
     }
 
 

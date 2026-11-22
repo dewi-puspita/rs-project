@@ -104,7 +104,7 @@ class LLMEngine:
             "detected_age": age
         }
 
-    def _call_ollama(self, messages: List[Dict[str, str]], temperature: float = 0.5) -> Optional[str]:
+    def _call_ollama(self, messages: List[Dict[str, str]], temperature: float = 0.5, max_tokens: int = 150) -> Optional[str]:
         """Menghubungi endpoint lokal Ollama."""
         try:
             url = f"{self.ollama_url}/api/chat"
@@ -112,7 +112,10 @@ class LLMEngine:
                 "model": self.model_name,
                 "messages": messages,
                 "stream": False,
-                "options": {"temperature": temperature}
+                "options": {
+                    "temperature": temperature,
+                    "num_predict": max_tokens
+                }
             }
             resp = requests.post(url, json=payload, timeout=90)
             if resp.status_code == 200:
@@ -201,3 +204,64 @@ class LLMEngine:
 
         # Jika Ollama belum siap/download belum selesai, gunakan Offline Fallback
         return self._generate_offline_grounded_response(user_query, candidates)
+
+    def generate_reasons_for_books(
+        self,
+        user_query: str,
+        candidates: List[Dict[str, Any]],
+        age_cohort: Optional[str] = None,
+        active_emotions: Optional[Dict[str, float]] = None
+    ) -> Dict[int, str]:
+        """
+        Menghasilkan alasan rekomendasi per buku langsung dari model LLM terpilih (Llama/Qwen).
+        Mengembalikan dictionary: {rank: 'alasan dari LLM'}
+        """
+        if not candidates:
+            return {}
+
+        book_summaries = []
+        for c in candidates:
+            rank = c.get("final_rank", 1)
+            title = c.get("title", "")
+            author = c.get("author", "")
+            genre = c.get("genre", "")
+            desc = (c.get("description", "") or "")[:180]
+            book_summaries.append(
+                f"Buku #{rank}: '{title}' karya {author}\n"
+                f"- Genre: {genre}\n"
+                f"- Sinopsis: {desc}\n"
+            )
+
+        age_info = f"Rentang usia pembaca: {age_cohort} tahun." if age_cohort else ""
+        emo_str = ", ".join([f"{k} ({v})" for k, v in active_emotions.items()]) if active_emotions else "Netral"
+        emo_info = f"Mood/emosi pembaca: {emo_str}."
+
+        prompt = (
+            f"Kebutuhan Pembaca: \"{user_query}\"\n{age_info} {emo_info}\n\n"
+            f"Daftar Buku Rekomendasi:\n{''.join(book_summaries)}\n"
+            f"Instruksi: Berikan 1 kalimat alasan rekomendasi yang hangat dan meyakinkan dalam Bahasa Indonesia mengapa buku ini cocok untuk pembaca.\n\n"
+            f"Contoh format:\n"
+            f"#1: Buku ini sangat cocok karena menghadirkan kisah persahabatan yang manis dan menghibur.\n\n"
+            f"Tuliskan jawaban untuk setiap nomor buku sekarang:\n"
+        )
+
+        messages = [
+            {"role": "system", "content": "Kamu adalah kurator buku remaja yang ramah. Berikan alasan rekomendasi 1 kalimat yang hangat per buku."},
+            {"role": "user", "content": prompt}
+        ]
+
+        reply = self._call_ollama(messages, temperature=0.6, max_tokens=150)
+        reasons_map: Dict[int, str] = {}
+        if reply:
+            for line in reply.strip().split("\n"):
+                line = line.strip()
+                m = re.match(r'^#?(\d+)[\s:\.\-]+(.*)$', line)
+                if m:
+                    r_idx = int(m.group(1))
+                    r_text = m.group(2).strip()
+                    # Bersihkan jika ada tanda kurung siku atau awalan berulang
+                    r_text = re.sub(r'^\[|\]$', '', r_text).strip()
+                    if len(r_text) > 15:
+                        reasons_map[r_idx] = r_text
+
+        return reasons_map

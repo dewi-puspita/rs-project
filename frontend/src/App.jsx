@@ -30,7 +30,7 @@ const EMOTION_LIST = [
   'fear',
   'anger',
   'disgust',
-  'valence'
+  'objective'
 ];
 
 const PRESET_QUERIES = [
@@ -254,7 +254,7 @@ export default function App() {
                 <BookOpen size={22} color="var(--primary)" /> Hasil Rekomendasi Buku
               </h2>
               <span className="results-meta">
-                {results.books?.length || 0} Buku Ditemukan
+                {results.books?.length || 0} Buku Ditemukan • Model: {results.model_used === 'qwen2.5:7b' ? 'Qwen 2.5 7B' : 'Llama 3.1 8B'}
               </span>
             </div>
 
