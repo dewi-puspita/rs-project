@@ -1,2 +1,22 @@
-
+# Raw heavy source dataset
 data_pipeline/dataset/GoodReads_100k_books.csv
+
+# Python cache & build
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Environments
+.venv/
+venv/
+ENV/
+
+# OS / Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+rag/vector_store/

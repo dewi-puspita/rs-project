@@ -1,0 +1,161 @@
+{
+  "report_name": "Laporan Komparasi Hybrid Retrieval (Rantug v2 Bab 8.4)",
+  "generated_at": "2026-11-22T09:54:55.630539",
+  "query_configuration": {
+    "query_id": "Aku ingin membaca cerita tentang persahabatan, petualangan, dan perjuangan remaja.",
+    "query_en": "A story about friendship, adventure, and the struggles of teenagers.",
+    "bm25_keywords_en": "friendship adventure teenage struggles"
+  },
+  "overlap_metrics": {
+    "top_candidates_evaluated": 5,
+    "overlap_count": 1,
+    "overlap_book_ids": [
+      "4077065"
+    ],
+    "jaccard_similarity": 0.1111
+  },
+  "jalur_a_multilingual_e5": [
+    {
+      "rrf_rank": 1,
+      "rrf_score": 0.01639,
+      "book_id": "76366",
+      "title": "yesterday i cried celebrating the lessons of living and loving",
+      "author": "iyanla vanzant",
+      "genre": "Mujeres afronorteamericanas, Afro-American women, Psychology, Blacks, Conducta (Etica), Life Style, African American women",
+      "themes": "Conduct of life",
+      "average_rating": 4.23,
+      "dense_rank": 1,
+      "dense_score": 0.8067,
+      "bm25_rank": null,
+      "bm25_score": null
+    },
+    {
+      "rrf_rank": 2,
+      "rrf_score": 0.01639,
+      "book_id": "4077065",
+      "title": "so you re a teenage girl",
+      "author": "jill renich meyers",
+      "genre": "Young women, Adolescence, Girls",
+      "themes": "conduct of life",
+      "average_rating": 2.33,
+      "dense_rank": null,
+      "dense_score": null,
+      "bm25_rank": 1,
+      "bm25_score": 13.9836
+    },
+    {
+      "rrf_rank": 3,
+      "rrf_score": 0.01613,
+      "book_id": "243908",
+      "title": "it s my life a workout for your mind",
+      "author": "tian dayton",
+      "genre": "Interpersonal relations, Problems, exercises, etc, Self-perception, Juvenile Nonfiction",
+      "themes": "Identity, Identity (Psychology) in adolescence, Family/Marriage",
+      "average_rating": 2.75,
+      "dense_rank": 2,
+      "dense_score": 0.8036,
+      "bm25_rank": null,
+      "bm25_score": null
+    },
+    {
+      "rrf_rank": 4,
+      "rrf_score": 0.01613,
+      "book_id": "124750",
+      "title": "chicken soup for the teenage soul on love and friendship",
+      "author": "jack canfield mark victor hansen",
+      "genre": "Nonfiction, Self Help, Inspirational, Short Stories, Romance, Childrens, Young Adult, Teen, Middle Grade, Classics, Academic, School",
+      "themes": "",
+      "average_rating": 4.06,
+      "dense_rank": null,
+      "dense_score": null,
+      "bm25_rank": 2,
+      "bm25_score": 13.0495
+    },
+    {
+      "rrf_rank": 5,
+      "rrf_score": 0.01587,
+      "book_id": "3330026",
+      "title": "jesus freaks",
+      "author": "d c talk",
+      "genre": "",
+      "themes": "",
+      "average_rating": 4.21,
+      "dense_rank": 3,
+      "dense_score": 0.8025,
+      "bm25_rank": null,
+      "bm25_score": null
+    }
+  ],
+  "jalur_b_bge_large_en": [
+    {
+      "rrf_rank": 1,
+      "rrf_score": 0.02748,
+      "book_id": "427920",
+      "title": "chicken soup for the teenage soul",
+      "author": "jack canfield mark victor hansen kimberly kirberger",
+      "genre": "Teenagers, Anecdotes, Nonfiction",
+      "themes": "Conduct of life, Family & Relationships",
+      "average_rating": 3.93,
+      "dense_rank": 17,
+      "dense_score": 0.6626,
+      "bm25_rank": 9,
+      "bm25_score": 10.0266
+    },
+    {
+      "rrf_rank": 2,
+      "rrf_score": 0.02655,
+      "book_id": "202722",
+      "title": "plague year",
+      "author": "stephanie s tolan",
+      "genre": "High schools, Fiction, Schools, Children's fiction, Mystery and detective stories, fiction",
+      "themes": "Prejudices",
+      "average_rating": 3.77,
+      "dense_rank": 19,
+      "dense_score": 0.6603,
+      "bm25_rank": 12,
+      "bm25_score": 9.7154
+    },
+    {
+      "rrf_rank": 3,
+      "rrf_score": 0.01639,
+      "book_id": "800245",
+      "title": "on friendship a book for teenagers",
+      "author": "kimberly kirberger colin mortensen",
+      "genre": "Relaciones humanas, Adolescentes, Life skills guides, Amistad, Teenagers, Conducta (Ética), Interpersonal relations",
+      "themes": "Conduct of life",
+      "average_rating": 3.66,
+      "dense_rank": 1,
+      "dense_score": 0.7133,
+      "bm25_rank": null,
+      "bm25_score": null
+    },
+    {
+      "rrf_rank": 4,
+      "rrf_score": 0.01639,
+      "book_id": "4077065",
+      "title": "so you re a teenage girl",
+      "author": "jill renich meyers",
+      "genre": "Young women, Adolescence, Girls",
+      "themes": "conduct of life",
+      "average_rating": 2.33,
+      "dense_rank": null,
+      "dense_score": null,
+      "bm25_rank": 1,
+      "bm25_score": 13.9836
+    },
+    {
+      "rrf_rank": 5,
+      "rrf_score": 0.01613,
+      "book_id": "452826",
+      "title": "more than a friend love stories for young adults",
+      "author": "elizabeth winfrey",
+      "genre": "Interpersonal relations in adolescence, Teenagers, Dating (Social customs), Fiction",
+      "themes": "",
+      "average_rating": 3.8,
+      "dense_rank": 2,
+      "dense_score": 0.6956,
+      "bm25_rank": null,
+      "bm25_score": null
+    }
+  ]
+}

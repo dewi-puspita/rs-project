@@ -1,0 +1,53 @@
+{
+  "benchmark_sample_size": 500,
+  "batch_size": 8,
+  "device": "CPU",
+  "cpu_cores": 12,
+  "total_eligible_docs": 19778,
+  "results": {
+    "multilingual_e5_large": {
+      "model_name": "intfloat/multilingual-e5-large",
+      "embedding_dim": 1024,
+      "sample_size": 500,
+      "batch_size": 8,
+      "max_seq_length": 512,
+      "model_load_time_sec": 11.92,
+      "encode_time_sec": 297.78,
+      "docs_per_second": 1.68,
+      "ms_per_doc": 595.6,
+      "estimated_hours_for_19778_docs": 3.27,
+      "ram_load_delta_gb": 0.33,
+      "ram_peak_gb": 2.29,
+      "token_stats": {
+        "min": 29,
+        "max": 814,
+        "mean": 177.8,
+        "median": 162.5,
+        "truncated_count": 4,
+        "truncated_percentage": 0.8
+      }
+    },
+    "bge_large_en_v1_5": {
+      "model_name": "BAAI/bge-large-en-v1.5",
+      "embedding_dim": 1024,
+      "sample_size": 500,
+      "batch_size": 8,
+      "max_seq_length": 512,
+      "model_load_time_sec": 447.86,
+      "encode_time_sec": 312.01,
+      "docs_per_second": 1.6,
+      "ms_per_doc": 624.0,
+      "estimated_hours_for_19778_docs": 3.43,
+      "ram_load_delta_gb": -0.25,
+      "ram_peak_gb": 1.99,
+      "token_stats": {
+        "min": 24,
+        "max": 1029,
+        "mean": 156.6,
+        "median": 139.5,
+        "truncated_count": 2,
+        "truncated_percentage": 0.4
+      }
+    }
+  }
+}
