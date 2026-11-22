@@ -1,0 +1,89 @@
+{
+  "summary": {
+    "P@3": 0.6,
+    "P@5": 0.64,
+    "nDCG@3": 0.7408,
+    "nDCG@5": 0.8908,
+    "MRR@1": 0.8,
+    "MRR@5": 0.8667,
+    "MAP": 0.8256,
+    "Emotion_Cosine_Mean": 0.1679
+  },
+  "queries": [
+    {
+      "id": "Q1",
+      "topik": "Romansa Remaja Sekolah",
+      "query": "Novel romantis remaja sekolah yang manis dan bikin senyum-senyum sendiri",
+      "top1_title": "say goodnight gracie",
+      "top1_genre": "Friendship & School Life",
+      "p@3": 1.0,
+      "p@5": 1.0,
+      "ndcg@3": 1.0,
+      "ndcg@5": 1.0,
+      "mrr@1": 1.0,
+      "mrr@5": 1.0,
+      "ap": 1.0,
+      "emotion_cosine": 0.1666
+    },
+    {
+      "id": "Q2",
+      "topik": "Persahabatan & Coming-of-Age",
+      "query": "Aku lagi galau banget butuh cerita persahabatan hangat dan coming-of-age",
+      "top1_title": "on friendship a book for teenagers",
+      "top1_genre": "Coming-of-Age & Friendship",
+      "p@3": 0.3333,
+      "p@5": 0.6,
+      "ndcg@3": 0.4693,
+      "ndcg@5": 0.8529,
+      "mrr@1": 1.0,
+      "mrr@5": 1.0,
+      "ap": 0.7,
+      "emotion_cosine": 0.2061
+    },
+    {
+      "id": "Q3",
+      "topik": "Fantasi, Sihir & Petualangan",
+      "query": "Cerita fantasi sihir penuh petualangan dan misteri menegangkan",
+      "top1_title": "the haunted wizard wizard in rhyme",
+      "top1_genre": "Fantasy & Sci-Fi",
+      "p@3": 1.0,
+      "p@5": 0.8,
+      "ndcg@3": 1.0,
+      "ndcg@5": 0.9829,
+      "mrr@1": 1.0,
+      "mrr@5": 1.0,
+      "ap": 0.95,
+      "emotion_cosine": 0.2276
+    },
+    {
+      "id": "Q4",
+      "topik": "Fiksi Ilmiah & Distopia Remaja",
+      "query": "Kisah fiksi ilmiah distopia tentang pemberontakan anak muda melawan tirani",
+      "top1_title": "we",
+      "top1_genre": "Sci-Fi",
+      "p@3": 0.3333,
+      "p@5": 0.2,
+      "ndcg@3": 1.0,
+      "ndcg@5": 1.0,
+      "mrr@1": 1.0,
+      "mrr@5": 1.0,
+      "ap": 1.0,
+      "emotion_cosine": 0.1039
+    },
+    {
+      "id": "Q5",
+      "topik": "Misteri & Investigasi Kasus",
+      "query": "Buku misteri detektif pemecahan kasus kriminal untuk remaja",
+      "top1_title": "the habits of highly effective teens",
+      "top1_genre": "Coming-of-Age & Friendship",
+      "p@3": 0.3333,
+      "p@5": 0.6,
+      "ndcg@3": 0.2346,
+      "ndcg@5": 0.6183,
+      "mrr@1": 0.0,
+      "mrr@5": 0.3333,
+      "ap": 0.4778,
+      "emotion_cosine": 0.1351
+    }
+  ]
+}
