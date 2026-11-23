@@ -31,11 +31,11 @@ Rules:
 
 EMOTION_KEYWORDS_MAP = {
     "Joy": ["bahagia", "senang", "ceria", "gembira", "menyenangkan", "lucu", "humor", "komedi", "hangat", "happy", "joy"],
-    "Sadness": ["sedih", "haru", "pilu", "duka", "menangis", "patah hati", "melankolis", "kehilangan", "sad", "sadness"],
-    "Fear": ["takut", "horor", "seram", "mencekam", "tegang", "menakutkan", "panik", "thriller", "fear"],
+    "Sadness": ["sedih", "haru", "pilu", "duka", "menangis", "patah hati", "melankolis", "kehilangan", "galau", "sad", "sadness"],
+    "Fear": ["takut", "horor", "horror", "seram", "menyeramkan", "mencekam", "tegang", "menegangkan", "menakutkan", "panik", "hantu", "thriller", "fear", "scary", "spooky", "creepy"],
     "Anger": ["marah", "emosi", "kesal", "konflik", "balas dendam", "benci", "amarah", "anger"],
     "Surprise": ["kejutan", "twist", "plot twist", "tak terduga", "misterius", "kaget", "surprise"],
-    "Trust": ["persahabatan", "sahabat", "percaya", "kesetiaan", "loyalitas", "keluarga", "trust"],
+    "Trust": ["persahabatan", "sahabat", "percaya", "kesetiaan", "loyalitas", "keluarga", "teman", "trust"],
     "Anticipation": ["petualangan", "penasaran", "antusias", "eksplorasi", "tantangan", "misi", "perjuangan", "adventure", "anticipation"],
     "Disgust": ["jijik", "muak", "disgust"],
     "Objective": ["fakta", "sejarah", "biografi", "dokumenter", "nonfiksi", "objective"]
@@ -44,6 +44,7 @@ EMOTION_KEYWORDS_MAP = {
 INDONESIAN_TO_ENGLISH_TERMS = {
     "persahabatan": "friendship",
     "sahabat": "friends friendship",
+    "teman": "friends friendship",
     "petualangan": "adventure",
     "perjuangan": "struggle struggles",
     "remaja": "teenager teen young adult",
@@ -51,12 +52,33 @@ INDONESIAN_TO_ENGLISH_TERMS = {
     "cinta": "love romance",
     "romantis": "romantic romance",
     "misteri": "mystery detective",
+    "detektif": "detective crime mystery",
+    "kasus": "case investigation mystery",
+    "kriminal": "crime criminal investigation",
+    "pembunuhan": "murder crime mystery",
     "sihir": "magic wizard fantasy",
     "keluarga": "family",
     "fantasi": "fantasy magical",
     "sedih": "sad emotional",
+    "galau": "heartbreak sad melancholic",
+    "patah hati": "heartbreak breakup sad",
     "bahagia": "happy uplifting",
-    "keberanian": "courage bravery"
+    "keberanian": "courage bravery",
+    "horor": "horror scary",
+    "horror": "horror scary",
+    "seram": "scary horror creepy",
+    "menyeramkan": "scary horror creepy",
+    "tegang": "suspense thriller suspenseful",
+    "menegangkan": "suspense thriller suspenseful",
+    "mencekam": "eerie chilling suspense",
+    "hantu": "ghost haunted horror",
+    "thriller": "thriller suspense",
+    "takut": "fear scary horror",
+    "distopia": "dystopia dystopian",
+    "fiksi ilmiah": "sci-fi science fiction",
+    "alien": "alien extraterrestrial",
+    "komedi": "comedy humorous funny",
+    "lucu": "funny humor comedy"
 }
 
 
@@ -94,6 +116,12 @@ class LLMEngine:
         for id_t, en_t in INDONESIAN_TO_ENGLISH_TERMS.items():
             if id_t in lower:
                 en_words.append(en_t)
+
+        # Cek kata kunci pinjaman / bahasa Inggris langsung
+        direct_genres = ["horror", "thriller", "suspense", "mystery", "fantasy", "romance", "sci-fi", "dystopia", "detective", "adventure", "ghost", "vampire", "crime", "magic"]
+        for term in direct_genres:
+            if re.search(rf'\b{re.escape(term)}\b', lower):
+                en_words.append(term)
 
         bm25_keywords = " ".join(dict.fromkeys(" ".join(en_words).split())) if en_words else "young adult teenage book story"
 
@@ -239,9 +267,11 @@ class LLMEngine:
         prompt = (
             f"Kebutuhan Pembaca: \"{user_query}\"\n{age_info} {emo_info}\n\n"
             f"Daftar Buku Rekomendasi:\n{''.join(book_summaries)}\n"
-            f"Instruksi: Berikan 1 kalimat alasan rekomendasi yang hangat dan meyakinkan dalam Bahasa Indonesia mengapa buku ini cocok untuk pembaca.\n\n"
-            f"Contoh format:\n"
-            f"#1: Buku ini sangat cocok karena menghadirkan kisah persahabatan yang manis dan menghibur.\n\n"
+            f"Instruksi: Tuliskan tepat 1 kalimat alasan rekomendasi per nomor buku dalam Bahasa Indonesia. "
+            f"Langsung jelaskan kesesuaian cerita dan daya tariknya (JANGAN hanya mengulang judul atau nama penulis).\n\n"
+            f"Contoh format yang WAJIB diikuti:\n"
+            f"#1: Buku ini sangat pas karena menyajikan ketegangan misteri yang mencekam dan alur cerita yang tak terduga.\n"
+            f"#2: Buku ini cocok untukmu karena menghadirkan kisah horor yang intens dengan misteri mendalam.\n\n"
             f"Tuliskan jawaban untuk setiap nomor buku sekarang:\n"
         )
 
@@ -250,7 +280,7 @@ class LLMEngine:
             {"role": "user", "content": prompt}
         ]
 
-        reply = self._call_ollama(messages, temperature=0.6, max_tokens=150)
+        reply = self._call_ollama(messages, temperature=0.6, max_tokens=400)
         reasons_map: Dict[int, str] = {}
         if reply:
             for line in reply.strip().split("\n"):
@@ -261,7 +291,8 @@ class LLMEngine:
                     r_text = m.group(2).strip()
                     # Bersihkan jika ada tanda kurung siku atau awalan berulang
                     r_text = re.sub(r'^\[|\]$', '', r_text).strip()
-                    if len(r_text) > 15:
+                    # Pastikan bukan sekadar nama buku/penulis dan tidak terpotong menggantung
+                    if len(r_text) > 25 and not r_text.endswith(('karya', 'yang', 'dan', 'dengan', 'di', 'pada')):
                         reasons_map[r_idx] = r_text
 
         return reasons_map

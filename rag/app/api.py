@@ -152,7 +152,9 @@ def build_natural_reason(
             hook = f"Menghadirkan kisah {real_genre} dengan alur yang ringan dan sentuhan cerita yang manis."
     elif any(k in q_lower for k in ["galau", "sedih", "coming of age", "coming-of-age", "persahabatan", "sahabat"]):
         hook = f"Buku bergenre {real_genre} ini mengangkat dinamika emosi dan hangatnya persahabatan, sangat relate bagi yang sedang mencari kisah pendewasaan diri (coming-of-age)."
-    elif any(k in q_lower for k in ["fantasi", "sihir", "misteri", "petualangan", "distopia", "tegang"]):
+    elif any(k in q_lower for k in ["horror", "horor", "seram", "menyeramkan", "mencekam", "tegang", "menegangkan", "hantu", "thriller"]):
+        hook = f"Buku bergenre {real_genre} ini menyajikan ketegangan misteri dan atmosfer horor yang mendebarkan, cocok bagi kamu yang mencari bacaan seru dan memacu adrenalin."
+    elif any(k in q_lower for k in ["fantasi", "sihir", "misteri", "petualangan", "distopia"]):
         hook = f"Buku bergenre {real_genre} ini menyuguhkan petualangan seru yang memikat dengan teka-teki dan kejutan menarik di setiap babnya."
     else:
         hook = f"Buku bergenre {real_genre} ini memiliki kesesuaian cerita yang kuat dengan pencarianmu dan menghadirkan alur yang seru untuk diikuti."
@@ -319,4 +321,4 @@ def recommend_books(req: RecommendationRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("rag.app.api:app", host="127.0.0.1", port=8000, reload=False)
+    uvicorn.run("rag.app.api:app", host="127.0.0.1", port=8000, reload=True)
