@@ -211,7 +211,6 @@ export default function App() {
                 >
                   <option value="3">Top 3 Buku</option>
                   <option value="5">Top 5 Buku</option>
-                  <option value="8">Top 8 Buku</option>
                 </select>
               </div>
             </div>
