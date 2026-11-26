@@ -1,16 +1,10 @@
 """
-=============================================================================
 MODUL 2: EMOTION RECOMMENDER ENGINE (Profil Emosi 9 Dimensi & Fusi Skor Akhir)
-=============================================================================
-Slide PPT: "Modul Emotion Recommender & Final Ranking"
-
 Fungsi Inti:
 1. Emotion Companion Store: Lookup O(1) vektor emosi buku (19.784 buku).
-2. Cosine Similarity     : Menghitung keselarasan preferensi emosi pembaca
-                           terhadap EmotionVector buku (9 dimensi NRC-EIL).
+2. Cosine Similarity     : Menghitung keselarasan preferensi emosi pembaca terhadap EmotionVector buku (9 dimensi NRC-EIL).
 3. Min-Max Normalization : Menyetarakan skala skor RRF dan skor emosi ke [0, 1].
 4. Final Linear Fusion   : S_final = alpha * S_retrieval_norm + beta * S_emotion_norm
-=============================================================================
 """
 
 import json

@@ -1,15 +1,9 @@
 """
-=============================================================================
 MODUL 1: HYBRID RAG ENGINE (Pencarian Semantik E5 + Kata Kunci BM25 + Fusi RRF)
-=============================================================================
-Slide PPT: "Modul Hybrid Retrieval-Augmented Generation"
-
 Fungsi Inti:
 1. Sparse Retrieval: Mencari buku berdasarkan kata kunci leksikal (BM25Okapi).
 2. Dense Retrieval : Mencari buku berdasarkan makna semantik (Multilingual E5 Large).
-3. RRF Fusion      : Menggabungkan peringkat kedua metode dengan formula:
-                     RRF_Score(d) = sum(1 / (k + rank(d))) dengan k = 60.
-=============================================================================
+3. RRF Fusion      : Menggabungkan peringkat kedua metode dengan formula: RRF_Score(d) = sum(1 / (k + rank(d))) dengan k = 60.
 """
 
 import pickle

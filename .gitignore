@@ -20,3 +20,9 @@ Thumbs.db
 .idea/
 
 rag/vector_store/
+
+# file
+paper.txt
+README.md
+Rancangan_Tugas_Antigravity_Emotion_RAG_v2.md
+Emotion Vector-Based Fine-Tuning of Large Language Models for Age-Aware Teenage Book Recommendations.pdf

@@ -1,16 +1,11 @@
 """
-=============================================================================
 BACKEND API SERVICE (FastAPI + Uvicorn)
-=============================================================================
-Menghubungkan 3 Engine Inti (RAG Engine + Emotion Engine + LLM Engine)
-menjadi REST API untuk Frontend (Vite / React).
-=============================================================================
+Menghubungkan 3 Engine Inti (RAG Engine + Emotion Engine + LLM Engine) menjadi REST API untuk Frontend (Vite / React).
 """
 
 import sys
-import re
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any, Optional
 from pydantic import BaseModel, Field
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -37,7 +32,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Inisialisasi Singleton Engines
 print("[API Server] Memuat modul Hybrid RAG, Emotion, dan LLM Engines...")
 rag_engine = HybridRAGEngine()
 emotion_engine = EmotionRecommenderEngine()
@@ -209,10 +203,8 @@ def recommend_books(req: RecommendationRequest):
     if not req.query or not req.query.strip():
         raise HTTPException(status_code=400, detail="Kueri pengguna tidak boleh kosong.")
 
-    # 1. Atur model LLM aktif
     llm_engine.set_model(req.model_name)
 
-    # 2. Parsing Kueri Pengguna
     parsed = llm_engine.parse_user_query(req.query)
     
     # Tentukan kohor usia efektif (dari request atau deteksi teks)

@@ -1,33 +1,45 @@
 """
-=============================================================================
 MODUL 3: LLM & GROUNDED RESPONSE GENERATOR (Inference Lokal Ollama)
-=============================================================================
-Slide PPT: "Modul Integrasi LLM & Penjelasan Rekomendasi Ter-Grounding"
-
 Fungsi Inti:
 1. Query Parser   : Mengekstrak topik, kata kunci BM25, deteksi emosi & usia.
 2. Local LLM      : Terhubung ke Ollama lokal (Llama 3.1 8B / Qwen 2.5 7B).
-3. Grounding Guard: Menjamin LLM TIDAK mengarang buku di luar Top-N,
-                    TIDAK mengubah peringkat, dan menjelaskan keselarasan emosi
-                    sebagai preferensi (bukan jaminan perasaan mutlak).
+3. Grounding Guard: Menjamin LLM TIDAK mengarang buku di luar Top-N, TIDAK mengubah peringkat, dan menjelaskan keselarasan emosi sebagai preferensi (bukan jaminan perasaan mutlak).
 4. Offline Engine : Fallback otomatis jika Ollama belum dinyalakan.
-=============================================================================
 """
 
-import os
 import re
 from typing import List, Dict, Any, Optional
 import requests
 
 GROUNDING_SYSTEM_PROMPT = """You are a helpful, empathetic book recommendation assistant for teenagers and young adults.
-Use ONLY the book records supplied in the context.
-Rules:
-1. Do NOT invent books, authors, ratings, age information, themes, content warnings, or plot details outside the context.
-2. Do NOT change the ranking produced by the recommendation engine. Present books in the exact order of their Rank.
-3. Explain each recommendation using the supplied Description, Genre, and Themes.
-4. If a field or detail is missing, state that the information is unavailable.
-5. Describe emotion scores as emotional preference alignment (keselarasan preferensi emosi), NOT as a guarantee of how the reader will actually feel.
-6. Respond warmly, naturally, and supportively in Bahasa Indonesia."""
+
+Use ONLY the book records supplied in the context as the source of information for your recommendations.
+
+GROUNDING RULES:
+1. Do NOT invent or assume any books, authors, ratings, age information, themes, content warnings, characters, settings, historical periods, or plot details that are not explicitly stated in the supplied book records.
+2. Do NOT use your pretrained knowledge or external information to fill in missing details about a book, its author, or its story.
+3. Explain each recommendation using ONLY the supplied Description, Genre, and Themes.
+4. Do NOT force a book to match the user's request if the supplied information does not support that connection. Explain only the aspects that are genuinely relevant.
+5. If a detail is missing or insufficiently supported by the supplied records, do NOT guess or make assumptions. Simply avoid mentioning that detail.
+6. Preserve every book title exactly as provided. Do NOT translate, paraphrase, correct, or modify book titles.
+7. Make each recommendation explanation specific to its book. Avoid generic statements such as "this book is suitable for you" without explaining why.
+8. Keep explanations concise, clear, and factually grounded in the supplied records.
+9. Do NOT change the ranking produced by the recommendation engine. Present books in the exact order of their Rank.
+10. Describe emotion scores as emotional preference alignment (keselarasan preferensi emosi), NOT as a guarantee of how the reader will actually feel.
+11. Preserve the original meaning of the supplied Description. Do NOT reverse, exaggerate, misinterpret, or change the meaning of any statement.
+12. Each recommendation explanation must mention at least one concrete and relevant detail from the supplied Description, Genre, or Themes. Avoid vague statements that could apply to any book.
+13. When referring to a book by title, reproduce its complete title exactly as provided. Never translate, shorten, paraphrase, or partially omit a book title.
+14. Do NOT introduce personal, historical, cultural, or biographical assumptions that are not explicitly supported by the supplied book records.
+15. Explain the actual connection between the user's request and the book. If the connection is weak or indirect, do not exaggerate its relevance.
+
+OUTPUT RULES:
+- Write recommendation explanations in Bahasa Indonesia.
+- Use the pronoun "kamu" naturally when addressing the reader.
+- Do NOT include English phrases unnecessarily.
+- Do NOT add information that is not supported by the supplied book records.
+- Follow the output format requested by the user or the recommendation system.
+
+Respond warmly, naturally, and supportively in Bahasa Indonesia."""
 
 EMOTION_KEYWORDS_MAP = {
     "Joy": ["bahagia", "senang", "ceria", "gembira", "menyenangkan", "lucu", "humor", "komedi", "hangat", "happy", "joy"],
@@ -132,25 +144,39 @@ class LLMEngine:
             "detected_age": age
         }
 
-    def _call_ollama(self, messages: List[Dict[str, str]], temperature: float = 0.5, max_tokens: int = 150) -> Optional[str]:
+    def _call_ollama(
+        self,
+        messages: List[Dict[str, str]],
+        temperature: float = 0.5,
+        max_tokens: int = 150,
+        extra_options: Optional[Dict[str, Any]] = None
+    ) -> Optional[str]:
         """Menghubungi endpoint lokal Ollama."""
+        url = f"{self.ollama_url}/api/chat"
         try:
-            url = f"{self.ollama_url}/api/chat"
+            options: Dict[str, Any] = {
+                "temperature": temperature,
+                "num_predict": max_tokens
+            }
+            if extra_options:
+                options.update(extra_options)
             payload = {
                 "model": self.model_name,
                 "messages": messages,
                 "stream": False,
-                "options": {
-                    "temperature": temperature,
-                    "num_predict": max_tokens
-                }
+                "options": options
             }
+            print(f"[LLM Engine] Mengirim request ke Ollama ({url}) | model='{self.model_name}' | max_tokens={max_tokens}")
             resp = requests.post(url, json=payload, timeout=90)
             if resp.status_code == 200:
                 data = resp.json()
-                return data["message"]["content"]
-        except Exception:
-            pass
+                content = data["message"]["content"]
+                print(f"[LLM Engine] Ollama merespons HTTP 200 | model='{self.model_name}' | panjang={len(content)} karakter")
+                return content
+            err_detail = (resp.text or "").strip()[:200]
+            print(f"[LLM Engine] Ollama gagal | HTTP {resp.status_code} | model='{self.model_name}' | detail='{err_detail}'")
+        except Exception as e:
+            print(f"[LLM Engine] Error request Ollama | {type(e).__name__}: {e}")
         return None
 
     @staticmethod
@@ -199,7 +225,6 @@ class LLMEngine:
         if not candidates:
             return "Maaf, sistem tidak menemukan buku yang relevan dengan kriteria pencarian tersebut."
 
-        # Format konteks buku untuk LLM
         context_items = []
         for c in candidates:
             context_items.append(
@@ -225,12 +250,13 @@ class LLMEngine:
             messages.extend(conversation_history[-4:])
         messages.append({"role": "user", "content": prompt})
 
-        # Coba panggil Ollama
         reply = self._call_ollama(messages)
         if reply and len(reply.strip()) > 50:
+            print(f"[LLM Engine] Menggunakan respons Ollama ('{self.model_name}') untuk generate_recommendation ({len(reply)} karakter).")
             return reply
 
         # Jika Ollama belum siap/download belum selesai, gunakan Offline Fallback
+        print(f"[LLM Engine] Beralih ke offline fallback untuk generate_recommendation (model='{self.model_name}').")
         return self._generate_offline_grounded_response(user_query, candidates)
 
     def generate_reasons_for_books(
@@ -251,36 +277,54 @@ class LLMEngine:
         for c in candidates:
             rank = c.get("final_rank", 1)
             title = c.get("title", "")
-            author = c.get("author", "")
-            genre = c.get("genre", "")
-            desc = (c.get("description", "") or "")[:180]
-            book_summaries.append(
-                f"Buku #{rank}: '{title}' karya {author}\n"
-                f"- Genre: {genre}\n"
-                f"- Sinopsis: {desc}\n"
-            )
+            genre = (c.get("genre", "") or "").strip()[:45]
+            themes = (c.get("themes", "") or "").strip()[:35]
+            desc = (c.get("description", "") or "").strip()[:120]
+            parts = [f"#{rank} {title}"]
+            if genre:
+                parts.append(f"G:{genre}")
+            if themes:
+                parts.append(f"T:{themes}")
+            if desc:
+                parts.append(f"S:{desc}")
+            book_summaries.append(" | ".join(parts))
 
-        age_info = f"Rentang usia pembaca: {age_cohort} tahun." if age_cohort else ""
-        emo_str = ", ".join([f"{k} ({v})" for k, v in active_emotions.items()]) if active_emotions else "Netral"
-        emo_info = f"Mood/emosi pembaca: {emo_str}."
+        total_books = len(candidates)
+        ctx_parts = []
+        if age_cohort:
+            ctx_parts.append(f"Usia:{age_cohort}")
+        if active_emotions:
+            ctx_parts.append("Mood:" + ",".join(active_emotions.keys()))
+        meta_ctx = f" | {' | '.join(ctx_parts)}" if ctx_parts else ""
+        rank_tags = ", ".join(f"#{c.get('final_rank', idx)}:" for idx, c in enumerate(candidates, start=1))
 
         prompt = (
-            f"Kebutuhan Pembaca: \"{user_query}\"\n{age_info} {emo_info}\n\n"
-            f"Daftar Buku Rekomendasi:\n{''.join(book_summaries)}\n"
-            f"Instruksi: Tuliskan tepat 1 kalimat alasan rekomendasi per nomor buku dalam Bahasa Indonesia. "
-            f"Langsung jelaskan kesesuaian cerita dan daya tariknya (JANGAN hanya mengulang judul atau nama penulis).\n\n"
-            f"Contoh format yang WAJIB diikuti:\n"
-            f"#1: Buku ini sangat pas karena menyajikan ketegangan misteri yang mencekam dan alur cerita yang tak terduga.\n"
-            f"#2: Buku ini cocok untukmu karena menghadirkan kisah horor yang intens dengan misteri mendalam.\n\n"
-            f"Tuliskan jawaban untuk setiap nomor buku sekarang:\n"
+            f"Q:{user_query}{meta_ctx}\n"
+            + "\n".join(book_summaries)
+            + f"\nTulis {total_books} baris ({rank_tags}), masing-masing 1 kalimat singkat (10-15 kata) Bahasa Indonesia sapaan 'kamu' berbasis fakta S/G/T; jangan mengarang atau terjemahkan judul."
+        )
+
+        system_prompt = (
+            f"Kurator buku remaja akurat. Jawab {total_books} baris {rank_tags} saja, 1 kalimat singkat per buku pakai sapaan 'kamu'. "
+            f"Gunakan hanya fakta sinopsis, genre, dan tema sebagai referensi; dilarang pakai info eksternal atau mengarang detail. "
+            f"Judul dan metadata hanya referensi: jangan tulis judul, jangan terjemahkan judul, dan jangan keluarkan label G:, T:, atau S:. "
+            f"Sebutkan detail spesifik tanpa alasan generik. "
+            f"Respond warmly, naturally, and supportively in Bahasa Indonesia."
         )
 
         messages = [
-            {"role": "system", "content": "Kamu adalah kurator buku remaja yang ramah. Berikan alasan rekomendasi 1 kalimat yang hangat per buku."},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": prompt}
         ]
 
-        reply = self._call_ollama(messages, temperature=0.6, max_tokens=400)
+        num_predict = 140 if total_books <= 3 else max(140, total_books * 50)
+        num_ctx = 512 if total_books <= 3 else 1024
+        reply = self._call_ollama(
+            messages,
+            temperature=0.3,
+            max_tokens=num_predict,
+            extra_options={"num_ctx": num_ctx, "num_batch": 512, "num_thread": 8}
+        )
         reasons_map: Dict[int, str] = {}
         if reply:
             for line in reply.strip().split("\n"):
@@ -294,5 +338,16 @@ class LLMEngine:
                     # Pastikan bukan sekadar nama buku/penulis dan tidak terpotong menggantung
                     if len(r_text) > 25 and not r_text.endswith(('karya', 'yang', 'dan', 'dengan', 'di', 'pada')):
                         reasons_map[r_idx] = r_text
+
+            parsed_count = len(reasons_map)
+            if parsed_count == 0:
+                print(f"[LLM Engine] Ollama merespons ({len(reply)} karakter), tetapi parsing alasan gagal (0/{total_books} buku). Semua buku beralih ke offline fallback.")
+            elif parsed_count < total_books:
+                missing_ranks = [c.get("final_rank", 1) for c in candidates if c.get("final_rank", 1) not in reasons_map]
+                print(f"[LLM Engine] Parsing alasan parsial: {parsed_count}/{total_books} buku dari Ollama ('{self.model_name}'); rank {missing_ranks} beralih ke offline fallback.")
+            else:
+                print(f"[LLM Engine] Parsing alasan berhasil: {parsed_count}/{total_books} buku menggunakan respons Ollama ('{self.model_name}').")
+        else:
+            print(f"[LLM Engine] Ollama tidak memberikan respons (model='{self.model_name}'). Semua {total_books} buku beralih ke offline fallback.")
 
         return reasons_map
